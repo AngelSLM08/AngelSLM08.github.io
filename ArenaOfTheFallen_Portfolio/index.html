@@ -1,0 +1,725 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Portafolio de Arena of the Fallen. Arquitectura en Godot, siete personajes, arenas, efectos visuales e interfaz.">
+<meta name="theme-color" content="#0a0f1c">
+<title>Arena of the Fallen | Portafolio</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0a0f1c; --panel: #101827; --panel-deep: #0c1320; --line: #253246;
+  --gold: #d4af37; --gold-text: #e7c874; --blue: #00bfff;
+  --ink: #f1eee5; --body: #c3cbda; --muted: #9daac0;
+  --display: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, serif;
+  --text: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "Cascadia Code", Consolas, monospace;
+  --wrap: 1264px;
+}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-padding-top: 100px; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.65 var(--text); }
+body:has(dialog[open]) { overflow: hidden; }
+[hidden] { display: none !important; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:disabled { opacity: .48; cursor: default; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 4px; }
+img { display: block; max-width: 100%; }
+h1, h2, h3, h4, p, figure, dl, dd { margin: 0; }
+h1, h2, h3, h4 { font-family: var(--display); font-weight: 600; line-height: 1.13; }
+p, li { color: var(--body); }
+strong { color: var(--ink); }
+code { font: .87em var(--mono); color: #bce6f3; overflow-wrap: anywhere; }
+.wrap { width: min(calc(100% - 96px), var(--wrap)); margin-inline: auto; }
+.sr-only, .skip:not(:focus) { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip:focus { position: fixed; z-index: 5; top: 12px; left: 12px; padding: 12px; background: var(--panel); }
+
+.topbar { position: sticky; top: 0; z-index: 4; background: #090e18; border-bottom: 1px solid #283246; }
+.topbar .wrap { display: flex; align-items: center; justify-content: space-between; min-height: 70px; gap: 24px; }
+.brand { display: inline-flex; align-items: center; gap: 13px; font: 700 .96rem var(--display); letter-spacing: .09em; text-transform: uppercase; }
+.mark { width: 30px; height: 30px; flex: 0 0 30px; display: inline-grid; place-items: center; border: 1px solid #a18343; transform: rotate(45deg) scale(.76); }
+.mark::after { content: ""; width: 13px; height: 13px; border: 1px solid var(--gold-text); box-shadow: 0 0 10px #d4af374d; }
+.tabs { display: flex; align-self: stretch; align-items: stretch; }
+.tab { position: relative; min-height: 46px; padding: 0 23px; border: 0; border-bottom: 2px solid transparent; background: none; font-size: .83rem; font-weight: 650; color: var(--muted); white-space: nowrap; }
+.tab:hover { color: var(--ink); background: #141d2b; }
+.tab[aria-selected=true] { color: var(--gold-text); border-bottom-color: var(--gold); background: linear-gradient(0deg,#d4af3712,transparent); }
+
+.hero { position: relative; min-height: 530px; isolation: isolate; overflow: hidden; display: flex; align-items: center; border-bottom: 1px solid #b097531f; }
+.hero-art { position: absolute; z-index: -2; inset: 0 0 0 auto; width: 80%; height: 100%; object-fit: cover; object-position: center 53%; }
+.hero::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg,#0a0f1c 4%,rgb(10 15 28 / .96) 20%,rgb(10 15 28 / .71) 43%,transparent 81%), linear-gradient(0deg,#0a0f1c 0%,transparent 56%), linear-gradient(180deg,#0a0f1c50,transparent 28%); }
+.hero .wrap { padding-block: 66px 88px; }
+.kicker { display: flex; align-items: center; gap: 12px; color: var(--gold-text); font-size: .72rem; font-weight: 750; letter-spacing: .22em; text-transform: uppercase; }
+.kicker::before { content: ""; flex: 0 0 27px; height: 1px; background: var(--gold); }
+.hero h1 { font-size: clamp(3.4rem,7.4vw,7.45rem); font-weight: 600; line-height: .93; margin: 22px 0 23px; letter-spacing: -.07em; text-shadow: 0 4px 28px #0006; }
+.hero h1 span { color: var(--gold-text); }
+.hero p:not(.kicker) { max-width: 490px; font-size: 1.04rem; color: #e0e4eb; text-wrap: pretty; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 28px; }
+.cta { display: inline-flex; align-items: center; justify-content: center; gap: 13px; min-height: 46px; padding: 8px 18px; background: var(--gold-text); color: #131318; border: 1px solid var(--gold-text); font-size: .82rem; font-weight: 750; transition: background .2s, border-color .2s; }
+.cta:hover { background: #f6dc98; }
+.cta.secondary { color: var(--ink); background: #0b1220ad; border-color: #8393aa70; }
+.cta.secondary:hover { background: #1b2737; border-color: var(--gold); }
+.hero-facts { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); border: 1px solid var(--line); background: var(--panel-deep); }
+.hero-facts div { padding: 15px 22px; }
+.hero-facts div + div { border-left: 1px solid var(--line); }
+.hero-facts dt { color: var(--muted); font-size: .71rem; }
+.hero-facts dd { font: 650 1.12rem var(--display); margin-top: 2px; }
+
+main { padding-top: 0; padding-bottom: 90px; }
+.tab-panel { animation: reveal .26s ease-out both; }
+@keyframes reveal { from { opacity: .5; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.panel-head { padding: 51px 0 29px; }
+.panel-head h2 { font-size: clamp(2.4rem, 5vw, 4.25rem); letter-spacing: -.045em; }
+.panel-head p, .section-head p { margin-top: 8px; max-width: 740px; }
+.tech-layout { display: grid; grid-template-columns: 220px minmax(0,1fr); align-items: start; gap: 30px; }
+.contents { position: sticky; top: 96px; padding: 17px 18px; border-top: 1px solid #b08c49; background: var(--panel-deep); }
+.contents p { font-size: .68rem; letter-spacing: .16em; color: var(--gold-text); text-transform: uppercase; font-weight: 700; }
+.contents a { display: block; font-size: .85rem; color: var(--muted); padding: 8px 0; }
+.contents a:hover { color: var(--gold-text); }
+.tech-stack { display: grid; grid-template-columns: minmax(0,1fr); gap: 20px; min-width: 0; }
+.tech-section { padding: clamp(20px,3.2vw,36px); border: 1px solid var(--line); background: linear-gradient(160deg,#121b2b,var(--panel-deep) 75%); }
+.tech-section h3 { font-size: clamp(1.65rem,3.3vw,2.45rem); color: var(--ink); margin-bottom: 14px; }
+.tech-section h4 { font-size: 1.26rem; color: var(--gold-text); margin: 19px 0 8px; }
+.tech-section p + p { margin-top: 11px; }
+.tech-section ul { padding-left: 1.2em; margin: 8px 0 0; }
+.tech-section li { padding: 4px 0; }
+.tech-section li::marker { color: var(--gold); }
+.file-label { overflow-wrap: anywhere; margin-bottom: 8px; font: .72rem var(--mono); color: #88d6f2; }
+.code-frame { border: 1px solid #2a3a52; margin-top: 20px; background: #070d18; }
+.code-title { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 3px 14px; padding: 9px 13px; border-bottom: 1px solid #26354a; color: var(--muted); background: #101b2b; font: .72rem/1.4 var(--mono); overflow-wrap: anywhere; }
+.code-title strong { color: #d6e0f2; }
+pre { overflow: auto; margin: 0; padding: 15px 14px 17px; tab-size: 4; }
+pre code { color: #d5dfed; font-size: .81rem; overflow-wrap: normal; }
+.kw { color: #e8a3df; } .str { color: #b9da8b; } .num { color: #f4c779; } .comment { color: #95a8bd; }
+.formula { display: grid; gap: 8px; margin: 16px 0 11px; padding: 14px; background: #0c1b2b; border-left: 2px solid var(--blue); }
+
+.art-nav { display: flex; flex-wrap: wrap; gap: 8px; padding-bottom: 8px; }
+.art-nav a { padding: 6px 13px; font-size: .8rem; font-weight: 650; border: 1px solid var(--line); color: var(--body); }
+.art-nav a:hover { color: var(--gold-text); border-color: var(--gold); }
+.art-section { margin-top: 46px; }
+.section-head { border-top: 1px solid #344256; padding-top: 24px; margin-bottom: 20px; }
+.section-head h3 { font-size: clamp(1.95rem,4vw,3.15rem); letter-spacing: -.035em; }
+.group-label { font: 650 1.33rem var(--display); color: var(--gold-text); margin: 27px 0 11px; }
+.unit-grid, .arena-grid, .vfx-grid, .weapon-grid, .portrait-grid, .icon-grid, .audio-grid { display: grid; gap: 15px; }
+.unit-grid, .arena-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+.unit-grid.expansion, .vfx-grid { grid-template-columns: repeat(4,minmax(0,1fr)); }
+.weapon-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.portrait-grid, .icon-grid { grid-template-columns: repeat(auto-fit,minmax(min(125px,100%),1fr)); }
+.art-card, .unit-card, .audio-card { border: 1px solid var(--line); background: var(--panel-deep); min-width: 0; }
+.art-open { width: 100%; display: grid; place-items: center; position: relative; padding: 0; border: 1px solid transparent; background: var(--art-bg,#0a111d); overflow: hidden; isolation: isolate; }
+.art-open:hover { border-color: var(--gold); }
+.art-open img { width: 100%; height: 100%; object-fit: contain; transition: transform .35s ease; }
+.art-open:hover img { transform: scale(1.045); }
+.zoom { position: absolute; z-index: 1; top: 9px; right: 9px; border: 1px solid #d7bc6e60; background: #080d16d9; color: var(--gold-text); border-radius: 2px; width: 30px; height: 30px; display: grid; place-items: center; font-size: 1rem; line-height: 1; }
+.unit-card .art-open { aspect-ratio: 1 / 1.04; background: radial-gradient(ellipse at 50% 55%,var(--halo,#233750),#0c1320 73%); }
+.unit-card .art-open img { max-height: 350px; }
+.unit-copy, .art-card figcaption { padding: 14px 16px 17px; }
+.unit-copy h5 { margin: 0; font: 650 1.58rem var(--display); }
+.role { font-size: .76rem; color: var(--gold-text); margin: 4px 0 13px; }
+.unit-stats { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 6px; padding: 9px 0; border-block: 1px solid var(--line); }
+.unit-stats dt { font-size: .68rem; color: var(--muted); }
+.unit-stats dd { color: #d9ebf4; font-weight: 750; font-size: .97rem; }
+.basic { margin-top: 12px; font-size: .78rem; }
+.ability-list { padding: 0; margin: 8px 0 0; list-style: none; }
+.ability-list li { border-top: 1px solid #2532469c; padding-block: 8px; font-size: .78rem; }
+.ability-list li span { display: block; color: var(--muted); margin-top: 2px; }
+.ability-list small { color: #85dcf5; font: .66rem var(--mono); white-space: nowrap; }
+.art-card figcaption strong { display: block; overflow-wrap: anywhere; font: 650 1.15rem var(--display); }
+.art-card figcaption span { display: block; color: var(--muted); font-size: .77rem; margin-top: 4px; }
+.arena-grid .art-open { aspect-ratio: 1.58; background: radial-gradient(ellipse at 50% 55%,#324358,#0e1522 84%); }
+.arena-grid .art-open img { object-fit: cover; }
+.weapon-grid .art-open { aspect-ratio: 1.7; background: radial-gradient(ellipse at center,#26394b,#0a111d 78%); }
+.portrait-grid .art-open, .icon-grid .art-open, .vfx-grid .art-open { aspect-ratio: 1; background: #060b13; }
+.vfx-grid .art-open img { padding: 5px; }
+.icon-grid .art-open img { padding: 18%; }
+.portrait-pair { display: grid; grid-template-columns: 1fr; position: relative; }
+.portrait-pair .small-portrait { position: absolute; bottom: 6px; left: 6px; width: 33%; border-color: #8e7642; background: #111a28; }
+.small-portrait .zoom { display: none; }
+.portrait-grid figcaption, .icon-grid figcaption { padding: 10px; }
+.portrait-grid figcaption strong, .icon-grid figcaption strong { font-size: 1rem; }
+details { margin-top: 16px; padding: 13px 16px; border: 1px solid var(--line); background: var(--panel-deep); }
+summary { cursor: pointer; color: var(--gold-text); font-size: .9rem; font-weight: 650; }
+details > div { margin-top: 15px; }
+.audio-grid { grid-template-columns: repeat(auto-fit,minmax(min(282px,100%),1fr)); }
+.audio-card { padding: 14px; }
+.audio-card h4 { font-size: 1.16rem; margin-bottom: 4px; }
+.audio-card p { font-size: .75rem; color: var(--muted); margin-bottom: 9px; }
+audio { width: 100%; height: 42px; border-radius: 22px; accent-color: var(--gold); }
+
+footer { border-top: 1px solid var(--line); background: #080e18; }
+footer .wrap { display: flex; align-items: center; justify-content: space-between; gap: 20px; padding-block: 22px; }
+footer p, footer button { font-size: .79rem; color: var(--muted); }
+footer button { white-space: nowrap; border: 0; background: none; padding: 4px 0; }
+footer button:hover { color: var(--gold-text); }
+dialog { width: min(1100px,calc(100% - 28px)); max-height: 94vh; padding: 0; border: 1px solid #a58847; color: var(--ink); background: #0a101b; }
+dialog::backdrop { background: #03060bed; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 11px 15px; border-bottom: 1px solid var(--line); }
+.modal-header h2 { font-size: clamp(1.14rem,3vw,1.65rem); }
+.modal-view { display: grid; place-items: center; min-height: 100px; max-height: 65dvh; overflow: auto; background: radial-gradient(ellipse at center,#192b40,#070c14 76%); }
+.modal-view img, .modal-view canvas { max-width: 100%; max-height: 65dvh; height: auto; width: auto; object-fit: contain; }
+.modal-view canvas { width: min(500px,100%); }
+.modal-caption { padding: 10px 15px 0; font-size: .83rem; }
+.modal-controls { display: flex; flex-wrap: wrap; gap: 8px; padding: 11px 15px 14px; }
+.modal-controls button, .close-modal { background: #111b2b; border: 1px solid var(--line); min-height: 40px; padding: 6px 12px; font-size: .8rem; }
+.modal-controls button:hover:not(:disabled), .close-modal:hover { border-color: var(--gold); }
+@media (max-width: 1050px) {
+  .wrap { width: calc(100% - 56px); }
+  .tech-layout { grid-template-columns: 185px minmax(0,1fr); gap: 18px; }
+  .unit-grid.expansion, .vfx-grid { grid-template-columns: repeat(3,minmax(0,1fr)); }
+}
+@media (max-width: 760px) {
+  html { scroll-padding-top: 115px; }
+  .wrap { width: calc(100% - 32px); }
+  .topbar .wrap { min-height: 57px; gap: 10px; }
+  .brand { font-size: .74rem; letter-spacing: .035em; gap: 5px; }
+  .mark { width: 22px; height: 22px; flex-basis: 22px; }
+  .mark::after { width: 8px; height: 8px; }
+  .tab { padding-inline: 10px; font-size: .73rem; }
+  .hero { min-height: 455px; align-items: end; }
+  .hero-art { width: 100%; object-position: 60% center; }
+  .hero::after { background: linear-gradient(0deg,#0a0f1c 3%,#0a0f1ce8 29%,#0a0f1c60 75%,#0a0f1c44), linear-gradient(90deg,#0a0f1c85,transparent 75%); }
+  .hero .wrap { padding-block: 105px 39px; }
+  .hero h1 { font-size: clamp(3.15rem,10vw,5.75rem); margin-block: 13px 16px; }
+  .hero p:not(.kicker) { font-size: .92rem; max-width: 440px; }
+  .hero-actions { margin-top: 20px; }
+  .hero-facts div { padding: 12px 9px; }
+  .hero-facts dd { font-size: .95rem; }
+  .tech-layout { grid-template-columns: minmax(0,1fr); }
+  .contents { position: static; display: flex; flex-wrap: wrap; gap: 4px 13px; }
+  .contents p { width: 100%; }
+  .contents a { padding: 3px 0; }
+  .unit-grid, .unit-grid.expansion, .arena-grid, .vfx-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 450px) {
+  .topbar .wrap { width: 100%; flex-direction: column; gap: 0; }
+  .brand { min-height: 41px; }
+  .tabs { justify-content: center; }
+  .tab { flex: 1; padding-inline: 12px; min-height: 38px; }
+  .kicker { font-size: .62rem; letter-spacing: .16em; }
+  .kicker::before { flex-basis: 15px; }
+  .hero-facts { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .hero-facts div:nth-child(3) { border-left: 0; }
+  .hero-facts div:nth-child(n+3) { border-top: 1px solid var(--line); }
+  .unit-grid, .unit-grid.expansion, .arena-grid { grid-template-columns: minmax(0,1fr); }
+  .weapon-grid, .vfx-grid { gap: 9px; }
+  .art-card figcaption { padding: 9px; }
+  footer .wrap { align-items: start; flex-direction: column; gap: 8px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001s !important; transition-duration: .001s !important; scroll-behavior: auto !important; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+<header class="topbar">
+  <div class="wrap">
+    <a class="brand" href="#inicio" aria-label="Arena of the Fallen, portada"><span class="mark" aria-hidden="true"></span>Arena of the Fallen</a>
+    <nav class="tabs" role="tablist" aria-label="Fichas del portafolio">
+      <button type="button" class="tab" id="tab-tech" role="tab" aria-selected="true" aria-controls="tecnica">Ficha Técnica</button>
+      <button type="button" class="tab" id="tab-art" role="tab" aria-selected="false" aria-controls="arte" tabindex="-1">Ficha Artística</button>
+    </nav>
+  </div>
+</header>
+<div id="inicio" class="hero">
+  <img class="hero-art" src="./assets/ui/menu_bg.jpg" width="1407" height="752" fetchpriority="high" alt="">
+  <div class="wrap">
+    <p class="kicker">Combate táctico por turnos</p>
+    <h1>Arena of<br><span>the Fallen</span></h1>
+    <p>Forma un equipo, domina el tablero y combina habilidades en duelos tácticos contra la IA o en 1v1 local.</p>
+    <div class="hero-actions">
+      <a class="cta" href="#arte" data-tab-link="1">Explorar el arte <span aria-hidden="true">↗</span></a>
+      <a class="cta secondary" href="#tecnica" data-tab-link="0">Ver la arquitectura <span aria-hidden="true">↓</span></a>
+    </div>
+  </div>
+</div>
+<main id="contenido" class="wrap" tabindex="-1">
+  <dl class="hero-facts">
+    <div><dt>Motor</dt><dd>Godot</dd></div>
+    <div><dt>Tablero</dt><dd>10 × 10</dd></div>
+    <div><dt>Personajes</dt><dd>7 unidades</dd></div>
+    <div><dt>Escenarios</dt><dd>3 arenas</dd></div>
+  </dl>
+  
+<section id="tecnica" class="tab-panel" role="tabpanel" tabindex="-1" aria-labelledby="tab-tech">
+  <header class="panel-head">
+    <h2>Ficha Técnica</h2>
+    <p>De la selección de equipos al impacto de una habilidad. Arquitectura, reglas de combate y renderizado en Godot.</p>
+  </header>
+  <div class="tech-layout">
+    <nav class="contents" aria-label="Índice técnico">
+      <p>En esta ficha</p>
+      <a href="#arquitectura">Motor y arquitectura</a>
+      <a href="#cuadricula">Cuadrícula y rutas</a>
+      <a href="#combate">Turnos y estados</a>
+      <a href="#unidades-3d">Unidades 3D</a>
+      <a href="#efectos">Efectos visuales</a>
+    </nav>
+    <div class="tech-stack">
+      <article class="tech-section" id="arquitectura">
+        <p class="file-label">project.godot · autoload/</p>
+        <h3>Motor y arquitectura</h3>
+        <p>El encargo del portafolio indica <strong>Godot 4.4 con GDScript 2.0</strong>. La copia inspeccionada declara <strong>Godot 4.7 y Forward Plus</strong> en <code>project.godot</code>. La implementación descrita a continuación corresponde a esa copia.</p>
+        <p>El menú lleva al modo <strong>VS IA</strong> o <strong>1v1 local</strong>, a la selección de equipos de una a tres unidades y a la arena. La escena de combate lee esa configuración al instanciar el tablero y las unidades.</p>
+        <h4>Autoloads y datos</h4>
+        <ul>
+          <li><code>GameState</code> conserva el modo, la arena, los identificadores de los equipos y la semilla de partida durante los cambios de escena. Valida identificadores únicos y equipos del mismo tamaño.</li>
+          <li><code>RosterRegistry</code> carga los recursos <code>UnitData</code> de <code>data/units/</code>. Cada <code>.tres</code> reúne estadísticas, modelos, retratos y habilidades bajo un identificador.</li>
+          <li><code>SceneRouter</code> resuelve cada clave a una escena. Un <code>CanvasLayer</code> cubre la pantalla con un <code>ColorRect</code> negro cuyo alfa anima un <code>Tween</code>. Una bandera evita transiciones simultáneas.</li>
+          <li><code>AudioManager</code> centraliza la música y los efectos de sonido. El combate solicita los efectos en el punto de impacto.</li>
+        </ul>
+        <div class="code-frame"><div class="code-title"><strong>SceneRouter · fundido de pantalla</strong><span>GDScript · Formato adaptado</span></div><pre tabindex="0" aria-label="SceneRouter · fundido de pantalla"><code><span class="kw">func</span> _fade_to(alpha: float) -&gt; <span class="kw">void</span>:
+    <span class="kw">var</span> tween: Tween = create_tween()
+    tween.tween_property(_fade, <span class="str">&quot;modulate:a&quot;</span>, alpha, FADE_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+    <span class="kw">await</span> tween.finished</code></pre></div>
+        <p>El fundido dura <strong>0,25 s</strong> en cada sentido. <code>goto()</code> oscurece, cambia la escena, espera un fotograma del árbol y descubre la pantalla. Las señales de inicio y fin permiten a la interfaz seguir la transición.</p>
+      </article>
+
+      <article class="tech-section" id="cuadricula">
+        <p class="file-label">scripts/grid/grid_manager.gd</p>
+        <h3>GridManager y búsqueda de rutas</h3>
+        <p>El tablero lógico tiene <strong>100 casillas de 1 × 1 unidad</strong>, indexadas de <code>(0, 0)</code> a <code>(9, 9)</code>. La vista base construye un plano y recorre filas y columnas para añadir mallas alternas. Las arenas decoradas aportan su propia geometría sobre el mismo espacio táctico.</p>
+        <h4>Entre el mundo 3D y la matriz</h4>
+        <p><code>world_to_grid()</code> pasa por <code>to_local()</code> para respetar la transformación del tablero. La columna toma X y la fila toma Z. El eje Y del mundo corresponde a la altura.</p>
+        <div class="formula">
+          <code>(columna, fila) = (⌊x local / 1 + 5⌋, ⌊z local / 1 + 5⌋)</code>
+          <code>centro local = (columna + 0,5 − 5, 0, fila + 0,5 − 5)</code>
+        </div>
+        <p>El desplazamiento de cinco casillas convierte el origen centrado en índices que empiezan en cero. El medio paso lleva al centro de la casilla y <code>to_global()</code> devuelve su posición mundial. En un tablero sin desplazar, la casilla <code>(0, 0)</code> queda en <code>(−4,5, 0, −4,5)</code>. Para Silente, cuya huella es 2 × 2, el desplazamiento del centro es media huella.</p>
+        <div class="code-frame"><div class="code-title"><strong>GridManager · coordenadas del tablero</strong><span>GDScript · Formato adaptado</span></div><pre tabindex="0" aria-label="GridManager · coordenadas del tablero"><code><span class="kw">func</span> world_to_grid(world_pos: Vector3) -&gt; Vector2i:
+    <span class="kw">var</span> local_pos: Vector3 = to_local(world_pos)
+    <span class="kw">return</span> Vector2i(
+        floori(local_pos.x / CELL_SIZE + float(GRID_SIZE_X) * <span class="num">0.5</span>),
+        floori(local_pos.z / CELL_SIZE + float(GRID_SIZE_Z) * <span class="num">0.5</span>)
+    )
+
+<span class="kw">func</span> grid_to_world(grid_pos: Vector2i) -&gt; Vector3:
+    <span class="kw">var</span> local_pos := Vector3(
+        (float(grid_pos.x) + <span class="num">0.5</span> - float(GRID_SIZE_X) * <span class="num">0.5</span>) * CELL_SIZE,
+        <span class="num">0.0</span>,
+        (float(grid_pos.y) + <span class="num">0.5</span> - float(GRID_SIZE_Z) * <span class="num">0.5</span>) * CELL_SIZE
+    )
+    <span class="kw">return</span> to_global(local_pos)</code></pre></div>
+        <h4>Búsqueda en anchura (BFS)</h4>
+        <p><code>find_path()</code> recorre vecinos ortogonales con una cola FIFO. Cada paso tiene el mismo coste, así que la primera visita a la meta da una ruta mínima. <code>came_from</code> registra el padre de cada casilla. La ruta se reconstruye desde la meta y luego se invierte.</p>
+        <div class="code-frame"><div class="code-title"><strong>GridManager · expansión de la cola</strong><span>GDScript · Formato adaptado</span></div><pre tabindex="0" aria-label="GridManager · expansión de la cola"><code><span class="kw">var</span> frontier: Array[Vector2i] = [start]
+<span class="kw">var</span> came_from: Dictionary = {start: start}
+<span class="kw">var</span> found: bool = start == target
+<span class="kw">while</span> not frontier.is_empty() and not found:
+    <span class="kw">var</span> current: Vector2i = frontier[<span class="num">0</span>]
+    frontier.remove_at(<span class="num">0</span>)
+    <span class="kw">for</span> neighbor: Vector2i <span class="kw">in</span> get_cell_neighbors(
+        current, footprint_size, ignored_unit_cells
+    ):
+        <span class="kw">if</span> came_from.has(neighbor):
+            <span class="kw">continue</span>
+        came_from[neighbor] = current
+        <span class="kw">if</span> neighbor == target:
+            found = <span class="kw">true</span>
+            <span class="kw">break</span>
+        frontier.append(neighbor)</code></pre></div>
+        <p>Cada vecino se valida para <strong>todas</strong> las casillas de la huella. Se descartan bordes, obstáculos fijos y casillas de otras unidades. El origen propio se excluye del bloqueo dinámico. <code>get_reachable_cells()</code> usa la misma expansión y corta al alcanzar el límite de pasos de la unidad. Con ese conjunto se resaltan los destinos seleccionables.</p>
+      </article>
+
+      <article class="tech-section" id="combate">
+        <p class="file-label">scripts/battle/turn_manager.gd</p>
+        <h3>TurnManager, acciones y estados</h3>
+        <p>Cada equipo recibe <strong>2 puntos de acción (AP) compartidos</strong> por turno. Moverse por una ruta válida y ejecutar un ataque básico cuestan <strong>1 AP</strong> cada uno. Las habilidades tienen su propio coste. Frasco de Ácido, Llamado de la Espesura, Barrera de Hielo y Terremoto cuestan 2 AP.</p>
+        <p>El gestor verifica la unidad activa, los AP, el estado, el alcance y el objetivo antes de gastar. Al descontar, refleja el saldo en todas las unidades aliadas y emite señales para el HUD. Mientras hay movimiento o una acción de combate en curso, bloquea la entrada correspondiente. Al cerrar el turno aplica el daño de los charcos de ácido, actualiza estados y cede el control al otro equipo.</p>
+        <h4>Estados que alteran el turno</h4>
+        <ul>
+          <li><strong>Enraizamiento.</strong> Flecha de Raíz impide el movimiento durante un turno del objetivo. La unidad todavía puede atacar o usar una habilidad si satisface sus demás condiciones.</li>
+          <li><strong>Aturdimiento.</strong> Terremoto daña a enemigos adyacentes e impide que las unidades afectadas actúen durante su siguiente turno. La habilidad tiene una recarga de tres turnos propios.</li>
+          <li><strong>Protección.</strong> Cubrirse activa el escudo del Caballero. Barrera Azul hace invulnerable a Magnetar y lo inmoviliza. El flujo de daño marca ambos casos como bloqueados y las protecciones expiran al comenzar el siguiente turno propio.</li>
+        </ul>
+        <div class="code-frame"><div class="code-title"><strong>Unit3D · condiciones para actuar y moverse</strong><span>GDScript · Formato adaptado</span></div><pre tabindex="0" aria-label="Unit3D · condiciones para actuar y moverse"><code><span class="kw">func</span> can_act() -&gt; bool:
+    <span class="kw">return</span> current_hp &gt; <span class="num">0</span> and not is_moving and not protection_active and not is_immobilized and not is_stunned
+
+<span class="kw">func</span> can_move() -&gt; bool:
+    <span class="kw">return</span> can_act() and not is_rooted</code></pre></div>
+        <h4>Impacto sincronizado</h4>
+        <p><code>TurnManager</code> pasa un <code>Callable</code> a <code>Unit3D.play_combat_action()</code>. La unidad arranca la animación, calcula el instante de contacto del clip y lo ajusta por la velocidad de reproducción. Tras el temporizador, el <em>callback</em> dispara daño, sonido y VFX. Si hay un proyectil, espera también su trayectoria y comprueba si un muro de hielo lo intercepta.</p>
+        <div class="code-frame"><div class="code-title"><strong>Unit3D · espera del instante de contacto</strong><span>GDScript · Formato adaptado</span></div><pre tabindex="0" aria-label="Unit3D · espera del instante de contacto"><code><span class="kw">await</span> get_tree().create_timer(impact_delay, <span class="kw">false</span>).timeout
+<span class="kw">await</span> impact.call()
+<span class="kw">if</span> clip != <span class="kw">null</span> and anim_player.is_playing() and anim_player.current_animation == animation_name:
+    <span class="kw">await</span> anim_player.animation_finished</code></pre></div>
+      </article>
+
+      <article class="tech-section" id="unidades-3d">
+        <p class="file-label">scripts/units/unit_3d.gd · data/units/</p>
+        <h3>Unit3D, modelos y movimiento</h3>
+        <p>Godot importa el <code>.glb</code> como <code>PackedScene</code>. <code>UnitData</code> guarda esa referencia. <code>setup()</code> llama a <code>instantiate()</code>, agrega la instancia al nodo visual, aplica la escala del recurso y localiza su <code>AnimationPlayer</code>. Cuando una unidad requiere clips de otras escenas, el script los incorpora y ajusta sus rutas de animación.</p>
+        <p>La ruta lógica se recorre casilla a casilla. La unidad gira hacia el siguiente centro, interpola su <code>global_position</code> con un <code>Tween</code> y luego actualiza <code>grid_pos</code>. <code>cell_entered</code> permite resolver efectos de terreno al cruzar cada casilla. Magnetar eleva su pivote visual antes de avanzar y lo baja al terminar.</p>
+        <div class="code-frame"><div class="code-title"><strong>Unit3D · llegada a la siguiente casilla</strong><span>GDScript · Extracto</span></div><pre tabindex="0" aria-label="Unit3D · llegada a la siguiente casilla"><code><span class="kw">var</span> tween: Tween = create_tween()
+tween.set_trans(Tween.TRANS_LINEAR)
+tween.tween_property(<span class="kw">self</span>, <span class="str">&quot;global_position&quot;</span>, next_position, move_time)
+<span class="kw">await</span> tween.finished
+<span class="kw">var</span> previous_anchor: Vector2i = grid_pos
+grid_pos = next_cell
+cell_entered.emit(previous_anchor)</code></pre></div>
+        <h4>Armas ligadas al esqueleto</h4>
+        <p><code>BoneAttachment3D</code> hereda la pose del hueso seleccionado. El Caballero usa un anclaje en la mano derecha para la espada y otro en el antebrazo izquierdo para el escudo. El arma se instancia como hija con una transformación local que ajusta el agarre. El mismo patrón sirve para una lanza separada. En el modelo de Tritón la lanza ya forma parte de la escena importada.</p>
+        <div class="code-frame"><div class="code-title"><strong>Unit3D · anclaje al hueso</strong><span>GDScript · Extracto</span></div><pre tabindex="0" aria-label="Unit3D · anclaje al hueso"><code><span class="kw">var</span> attachment := BoneAttachment3D.new()
+attachment.name = attachment_name
+skeleton.add_child(attachment)
+attachment.bone_name = skeleton.get_bone_name(bone_index)
+<span class="kw">return</span> attachment</code></pre></div>
+      </article>
+
+      <article class="tech-section" id="efectos">
+        <p class="file-label">scenes/vfx/sprite_vfx.gd · sprite_vfx.gdshader</p>
+        <h3>VFX 2D en una escena 3D</h3>
+        <p>Los efectos animados usan hojas de <strong>16 fotogramas en una cuadrícula 4 × 4</strong>. <code>SpriteVFX</code> divide la textura en regiones <code>AtlasTexture</code>, recorre filas de izquierda a derecha y carga las regiones en <code>SpriteFrames</code> para reproducirlas con <code>AnimatedSprite2D</code>. El recorte interior y <code>filter_clip</code> reducen el sangrado de píxeles vecinos.</p>
+        <p>La posición 3D se proyecta a pantalla con <code>Camera3D.unproject_position()</code>. Una segunda proyección estima la escala visible para un tamaño de mundo dado. El ancla puede seguir los pies de una unidad para que las raíces y la barrera permanezcan alineadas con el personaje.</p>
+        <div class="code-frame"><div class="code-title"><strong>SpriteVFX · tamaño y región de cada fotograma</strong><span>GDScript · Extracto adaptado</span></div><pre tabindex="0" aria-label="SpriteVFX · tamaño y región de cada fotograma"><code><span class="kw">var</span> frame_size: Vector2 = sheet.get_size() / Vector2(hframes, vframes)
+<span class="comment"># Cada región entra al reproductor en orden de lectura.</span>
+<span class="kw">for</span> y: int <span class="kw">in</span> range(vframes):
+    <span class="kw">for</span> x: int <span class="kw">in</span> range(hframes):
+        <span class="kw">var</span> atlas := AtlasTexture.new()
+        atlas.atlas = sheet
+        atlas.region = Rect2(Vector2(x, y) * frame_size + inset,
+            frame_size - inset * <span class="num">2.0</span>)
+        atlas.filter_clip = <span class="kw">true</span>
+        frames.add_frame(<span class="str">&amp;&quot;default&quot;</span>, atlas)</code></pre></div>
+        <h4>Composición y persistencia</h4>
+        <p>El principio de <strong>Blend Mode = Add</strong> es sumar luz: los píxeles negros aportan cero y el brillo se conserva sobre la escena. El juego logra ese resultado con un shader de alfa premultiplicado, un umbral de brillo y bordes suavizados. Humo y raíces usan la rama de opacidad del shader para conservar densidad visual.</p>
+        <p>El reproductor admite una pasada, último fotograma fijo o bucle. Las raíces conservan el último cuadro hasta que termina el estado y la barrera de Magnetar se mantiene en bucle. El charco de ácido y el muro de hielo tienen imágenes estáticas independientes de sus hojas de impacto.</p>
+      </article>
+    </div>
+  </div>
+</section>
+  
+<section id="arte" class="tab-panel" role="tabpanel" tabindex="-1" aria-labelledby="tab-art" hidden>
+  <header class="panel-head">
+    <h2>Ficha Artística</h2>
+    <p>Renders de los modelos del juego, vistas de las arenas y recursos originales de efectos, interfaz y audio.</p>
+  </header>
+  <nav class="art-nav" aria-label="Índice artístico">
+    <a href="#personajes">Personajes</a><a href="#entornos">Arenas</a><a href="#vfx">VFX</a><a href="#armas-ui">Armas e interfaz</a><a href="#audio">Audio</a>
+  </nav>
+  <section class="art-section" id="personajes" aria-labelledby="personajes-titulo">
+    <header class="section-head"><h3 id="personajes-titulo">Personajes</h3><p>Salud y daño base según los recursos del juego. Alcance y movimiento expresados en casillas.</p></header>
+    <h4 class="group-label">Plantel original</h4>
+    <div class="unit-grid"><article class="unit-card" style="--halo:#344d66">
+      <button type="button" class="art-open " data-gallery="personajes" data-title="Caballero" data-caption="Render del modelo de Godot · Vanguardia" aria-label="Ampliar Caballero"><img loading="lazy" decoding="async" src="./assets/models/caballero.png" alt="Render 3D de Caballero"><span class="zoom" aria-hidden="true">↗</span></button>
+      <div class="unit-copy">
+        <h5>Caballero</h5><p class="role">Vanguardia</p>
+        <dl class="unit-stats">
+          <div><dt>Salud</dt><dd>120</dd></div><div><dt>Daño</dt><dd>18</dd></div>
+          <div><dt>Alcance</dt><dd>1</dd></div><div><dt>Pasos</dt><dd>3</dd></div>
+        </dl>
+        <p class="basic"><strong>Ataque básico</strong> · Golpe de espada</p>
+        <ul class="ability-list" aria-label="Habilidades de Caballero"><li><strong>Ataque con Espada</strong> <small>1 AP</small><span>Golpe a un objetivo adyacente.</span></li><li><strong>Embestida</strong> <small>1 AP</small><span>Avanza hasta dos casillas de la ruta y asesta un golpe de 25 de daño.</span></li><li><strong>Cubrirse</strong> <small>1 AP</small><span>Activa el escudo hasta el siguiente turno propio.</span></li></ul>
+      </div>
+    </article>
+<article class="unit-card" style="--halo:#384e49">
+      <button type="button" class="art-open " data-gallery="personajes" data-title="Arquero" data-caption="Render del modelo de Godot · Daño a distancia" aria-label="Ampliar Arquero"><img loading="lazy" decoding="async" src="./assets/models/arquero.png" alt="Render 3D de Arquero"><span class="zoom" aria-hidden="true">↗</span></button>
+      <div class="unit-copy">
+        <h5>Arquero</h5><p class="role">Daño a distancia</p>
+        <dl class="unit-stats">
+          <div><dt>Salud</dt><dd>90</dd></div><div><dt>Daño</dt><dd>25</dd></div>
+          <div><dt>Alcance</dt><dd>4</dd></div><div><dt>Pasos</dt><dd>4</dd></div>
+        </dl>
+        <p class="basic"><strong>Ataque básico</strong> · Disparo de arco</p>
+        <ul class="ability-list" aria-label="Habilidades de Arquero"><li><strong>Ataque Normal</strong> <small>1 AP</small><span>Dispara una flecha que inflige 25 de daño.</span></li><li><strong>Lluvia de Flechas</strong> <small>1 AP</small><span>Inflige 38 de daño en el área de impacto.</span></li><li><strong>Aumento de Velocidad</strong> <small>1 AP</small><span>Añade dos casillas de movimiento hasta el siguiente turno propio.</span></li></ul>
+      </div>
+    </article>
+<article class="unit-card" style="--halo:#224e70">
+      <button type="button" class="art-open " data-gallery="personajes" data-title="Magnetar" data-caption="Render del modelo de Godot · Ofensiva electromagnética" aria-label="Ampliar Magnetar"><img loading="lazy" decoding="async" src="./assets/models/magnetar.png" alt="Render 3D de Magnetar"><span class="zoom" aria-hidden="true">↗</span></button>
+      <div class="unit-copy">
+        <h5>Magnetar</h5><p class="role">Ofensiva electromagnética</p>
+        <dl class="unit-stats">
+          <div><dt>Salud</dt><dd>100</dd></div><div><dt>Daño</dt><dd>25</dd></div>
+          <div><dt>Alcance</dt><dd>3</dd></div><div><dt>Pasos</dt><dd>3</dd></div>
+        </dl>
+        <p class="basic"><strong>Ataque básico</strong> · Descarga electromagnética</p>
+        <ul class="ability-list" aria-label="Habilidades de Magnetar"><li><strong>Onda Electromagnética</strong> <small>1 AP</small><span>Inflige 25 de daño al objetivo.</span></li><li><strong>Barrera Azul</strong> <small>1 AP</small><span>Activa la invulnerabilidad e inmoviliza a Magnetar hasta su siguiente turno.</span></li><li><strong>Desestabilización Mental</strong> <small>1 AP</small><span>Inflige 50 al objetivo y 25 a Magnetar.</span></li></ul>
+      </div>
+    </article></div>
+    <h4 class="group-label">Nuevas unidades</h4>
+    <div class="unit-grid expansion"><article class="unit-card" style="--halo:#43523d">
+      <button type="button" class="art-open " data-gallery="personajes" data-title="Goblin" data-caption="Render del modelo de Godot · Hostigador" aria-label="Ampliar Goblin"><img loading="lazy" decoding="async" src="./assets/models/goblin.png" alt="Render 3D de Goblin"><span class="zoom" aria-hidden="true">↗</span></button>
+      <div class="unit-copy">
+        <h5>Goblin</h5><p class="role">Hostigador</p>
+        <dl class="unit-stats">
+          <div><dt>Salud</dt><dd>90</dd></div><div><dt>Daño</dt><dd>15</dd></div>
+          <div><dt>Alcance</dt><dd>1</dd></div><div><dt>Pasos</dt><dd>5</dd></div>
+        </dl>
+        <p class="basic"><strong>Ataque básico</strong> · Daga Oculta</p>
+        <ul class="ability-list" aria-label="Habilidades de Goblin"><li><strong>Bomba de Humo</strong> <small>1 AP</small><span>Otorga invulnerabilidad hasta el siguiente turno propio.</span></li><li><strong>Frasco de Ácido</strong> <small>2 AP</small><span>Inflige 20 de daño y deja un charco que puede infligir 5 más.</span></li></ul>
+      </div>
+    </article>
+<article class="unit-card" style="--halo:#3d5839">
+      <button type="button" class="art-open " data-gallery="personajes" data-title="Elfo" data-caption="Render del modelo de Godot · Control a distancia" aria-label="Ampliar Elfo"><img loading="lazy" decoding="async" src="./assets/models/elfo.png" alt="Render 3D de Elfo"><span class="zoom" aria-hidden="true">↗</span></button>
+      <div class="unit-copy">
+        <h5>Elfo</h5><p class="role">Control a distancia</p>
+        <dl class="unit-stats">
+          <div><dt>Salud</dt><dd>100</dd></div><div><dt>Daño</dt><dd>18</dd></div>
+          <div><dt>Alcance</dt><dd>4</dd></div><div><dt>Pasos</dt><dd>4</dd></div>
+        </dl>
+        <p class="basic"><strong>Ataque básico</strong> · Disparo Certero</p>
+        <ul class="ability-list" aria-label="Habilidades de Elfo"><li><strong>Flecha de Raíz</strong> <small>1 AP</small><span>Inflige 10 de daño e impide moverse durante un turno.</span></li><li><strong>Llamado de la Espesura</strong> <small>2 AP</small><span>Inflige 15 de daño en un área de 2 × 2 y reduce el movimiento a la mitad.</span></li></ul>
+      </div>
+    </article>
+<article class="unit-card" style="--halo:#1e5868">
+      <button type="button" class="art-open " data-gallery="personajes" data-title="Tritón" data-caption="Render del modelo de Godot · Control de terreno" aria-label="Ampliar Tritón"><img loading="lazy" decoding="async" src="./assets/models/triton.png" alt="Render 3D de Tritón"><span class="zoom" aria-hidden="true">↗</span></button>
+      <div class="unit-copy">
+        <h5>Tritón</h5><p class="role">Control de terreno</p>
+        <dl class="unit-stats">
+          <div><dt>Salud</dt><dd>140</dd></div><div><dt>Daño</dt><dd>20</dd></div>
+          <div><dt>Alcance</dt><dd>2</dd></div><div><dt>Pasos</dt><dd>3</dd></div>
+        </dl>
+        <p class="basic"><strong>Ataque básico</strong> · Estocada de Coral</p>
+        <ul class="ability-list" aria-label="Habilidades de Tritón"><li><strong>Marea Repentina</strong> <small>1 AP</small><span>Inflige 10 de daño, empuja dos casillas y suma 10 de daño si hay colisión.</span></li><li><strong>Barrera de Hielo</strong> <small>2 AP</small><span>Bloquea el paso y los proyectiles en una casilla adyacente durante dos turnos.</span></li></ul>
+      </div>
+    </article>
+<article class="unit-card" style="--halo:#50415f">
+      <button type="button" class="art-open " data-gallery="personajes" data-title="Silente" data-caption="Render del modelo de Godot · Coloso de asedio · huella 2 × 2" aria-label="Ampliar Silente"><img loading="lazy" decoding="async" src="./assets/models/silente.png" alt="Render 3D de Silente"><span class="zoom" aria-hidden="true">↗</span></button>
+      <div class="unit-copy">
+        <h5>Silente</h5><p class="role">Coloso de asedio · huella 2 × 2</p>
+        <dl class="unit-stats">
+          <div><dt>Salud</dt><dd>150</dd></div><div><dt>Daño</dt><dd>22</dd></div>
+          <div><dt>Alcance</dt><dd>1</dd></div><div><dt>Pasos</dt><dd>4</dd></div>
+        </dl>
+        <p class="basic"><strong>Ataque básico</strong> · Puño de Piedra</p>
+        <ul class="ability-list" aria-label="Habilidades de Silente"><li><strong>Grito Silencioso</strong> <small>1 AP</small><span>Inflige 15 de daño a enemigos adyacentes y aumenta el daño que reciben un 20%.</span></li><li><strong>Terremoto</strong> <small>2 AP</small><span>Inflige 25 de daño, aturde a enemigos adyacentes y tiene tres turnos de recarga.</span></li></ul>
+      </div>
+    </article></div>
+  </section>
+  <section class="art-section" id="entornos" aria-labelledby="entornos-titulo">
+    <header class="section-head"><h3 id="entornos-titulo">Arenas</h3><p>Tres interpretaciones visuales del tablero táctico de 10 × 10.</p></header>
+    <div class="arena-grid"><figure class="art-card"><button type="button" class="art-open " data-gallery="arenas" data-title="Templo de los Caídos" data-caption="Santuario de piedra sobre un abismo montañoso." aria-label="Ampliar Templo de los Caídos"><img loading="lazy" decoding="async" src="./assets/environments/templo_de_los_caidos.png" alt="Templo de los Caídos"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Templo de los Caídos</strong><span>Santuario de piedra sobre un abismo montañoso.</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="arenas" data-title="Bosque Ancestral" data-caption="Claro rodeado de árboles, corrientes y puentes." aria-label="Ampliar Bosque Ancestral"><img loading="lazy" decoding="async" src="./assets/environments/bosque_ancestral.png" alt="Bosque Ancestral"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Bosque Ancestral</strong><span>Claro rodeado de árboles, corrientes y puentes.</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="arenas" data-title="Reino Medieval" data-caption="Patio de combate enmarcado por torres y murallas." aria-label="Ampliar Reino Medieval"><img loading="lazy" decoding="async" src="./assets/environments/reino_medieval.png" alt="Reino Medieval"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Reino Medieval</strong><span>Patio de combate enmarcado por torres y murallas.</span></figcaption></figure></div>
+    <details><summary>Concepto y vistas previas del proyecto</summary>
+      <div class="arena-grid">
+        <figure class="art-card"><button type="button" class="art-open " data-gallery="conceptos" data-title="Concepto del templo" data-caption="Arte de fondo del menú principal." aria-label="Ampliar Concepto del templo"><img loading="lazy" decoding="async" src="./assets/ui/menu_bg.jpg" alt="Concepto del templo"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Concepto del templo</strong><span>Arte de fondo del menú principal.</span></figcaption></figure>
+        <figure class="art-card"><button type="button" class="art-open " data-gallery="conceptos" data-title="Concepto para selección de modo" data-caption="Arte de fondo de la pantalla de modo." aria-label="Ampliar Concepto para selección de modo"><img loading="lazy" decoding="async" src="./assets/ui/mode_select_gb.jpg" alt="Concepto para selección de modo"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Concepto para selección de modo</strong><span>Arte de fondo de la pantalla de modo.</span></figcaption></figure>
+        <figure class="art-card"><button type="button" class="art-open " data-gallery="conceptos" data-title="Vista frontal" data-caption="Vista previa original de una arena del proyecto." aria-label="Ampliar Vista frontal"><img loading="lazy" decoding="async" src="./assets/environments/vista_previa_frontal.png" alt="Vista frontal"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Vista frontal</strong><span>Vista previa original de una arena del proyecto.</span></figcaption></figure>
+        <figure class="art-card"><button type="button" class="art-open " data-gallery="conceptos" data-title="Vista isométrica" data-caption="Vista previa original de una arena del proyecto." aria-label="Ampliar Vista isométrica"><img loading="lazy" decoding="async" src="./assets/environments/vista_previa_isometrica.png" alt="Vista isométrica"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Vista isométrica</strong><span>Vista previa original de una arena del proyecto.</span></figcaption></figure>
+      </div>
+    </details>
+  </section>
+  <section class="art-section" id="vfx" aria-labelledby="vfx-titulo">
+    <header class="section-head"><h3 id="vfx-titulo">Efectos visuales</h3><p>Cada hoja contiene 16 fotogramas en una cuadrícula 4 × 4. Abre una hoja para verla en detalle y reproducir la secuencia.</p></header>
+    <div class="vfx-grid">
+      <figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Barrera Azul" data-caption="Magnetar · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Barrera Azul"><img loading="lazy" decoding="async" src="./assets/vfx/magnetar_barrera.png" alt="Hoja de 16 fotogramas de Barrera Azul"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Barrera Azul</strong><span>Magnetar · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Flecha de Raíz" data-caption="Elfo · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Flecha de Raíz"><img loading="lazy" decoding="async" src="./assets/vfx/elfo_raiz.png" alt="Hoja de 16 fotogramas de Flecha de Raíz"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Flecha de Raíz</strong><span>Elfo · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Marea Repentina" data-caption="Tritón · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Marea Repentina"><img loading="lazy" decoding="async" src="./assets/vfx/triton_ola.png" alt="Hoja de 16 fotogramas de Marea Repentina"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Marea Repentina</strong><span>Tritón · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Terremoto" data-caption="Silente · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Terremoto"><img loading="lazy" decoding="async" src="./assets/vfx/silente_terremoto.png" alt="Hoja de 16 fotogramas de Terremoto"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Terremoto</strong><span>Silente · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Onda Electromagnética" data-caption="Magnetar · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Onda Electromagnética"><img loading="lazy" decoding="async" src="./assets/vfx/magnetar_onda.png" alt="Hoja de 16 fotogramas de Onda Electromagnética"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Onda Electromagnética</strong><span>Magnetar · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Desestabilización Mental" data-caption="Magnetar · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Desestabilización Mental"><img loading="lazy" decoding="async" src="./assets/vfx/magnetar_mental.png" alt="Hoja de 16 fotogramas de Desestabilización Mental"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Desestabilización Mental</strong><span>Magnetar · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Llamado de la Espesura" data-caption="Elfo · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Llamado de la Espesura"><img loading="lazy" decoding="async" src="./assets/vfx/elfo_naturaleza.png" alt="Hoja de 16 fotogramas de Llamado de la Espesura"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Llamado de la Espesura</strong><span>Elfo · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Barrera de Hielo" data-caption="Tritón · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Barrera de Hielo"><img loading="lazy" decoding="async" src="./assets/vfx/triton_hielo.png" alt="Hoja de 16 fotogramas de Barrera de Hielo"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Barrera de Hielo</strong><span>Tritón · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Bomba de Humo" data-caption="Goblin · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Bomba de Humo"><img loading="lazy" decoding="async" src="./assets/vfx/goblin_humo.png" alt="Hoja de 16 fotogramas de Bomba de Humo"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Bomba de Humo</strong><span>Goblin · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Frasco de Ácido" data-caption="Goblin · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Frasco de Ácido"><img loading="lazy" decoding="async" src="./assets/vfx/goblin_acido.png" alt="Hoja de 16 fotogramas de Frasco de Ácido"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Frasco de Ácido</strong><span>Goblin · Hoja 4 × 4</span></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Grito Silencioso" data-caption="Silente · Hoja 4 × 4" data-sheet="true" aria-label="Ampliar Grito Silencioso"><img loading="lazy" decoding="async" src="./assets/vfx/silente_grito.png" alt="Hoja de 16 fotogramas de Grito Silencioso"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Grito Silencioso</strong><span>Silente · Hoja 4 × 4</span></figcaption></figure>
+      <figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Charco de ácido" data-caption="Goblin · Imagen estática de terreno" aria-label="Ampliar Charco de ácido"><img loading="lazy" decoding="async" src="./assets/vfx/goblin_charco.png" alt="Charco de ácido"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Charco de ácido</strong><span>Goblin · Imagen estática de terreno</span></figcaption></figure>
+      <figure class="art-card"><button type="button" class="art-open " data-gallery="vfx" data-title="Muro de hielo" data-caption="Tritón · Imagen estática de terreno" aria-label="Ampliar Muro de hielo"><img loading="lazy" decoding="async" src="./assets/vfx/triton_muro.png" alt="Muro de hielo"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Muro de hielo</strong><span>Tritón · Imagen estática de terreno</span></figcaption></figure>
+    </div>
+  </section>
+  <section class="art-section" id="armas-ui" aria-labelledby="armas-titulo">
+    <header class="section-head"><h3 id="armas-titulo">Armas e interfaz</h3><p>Modelos de equipo, iconos del HUD y los dos tamaños de retrato usados por el juego.</p></header>
+    <div class="weapon-grid">
+      <figure class="art-card"><button type="button" class="art-open " data-gallery="armas" data-title="Daga del Goblin" data-caption="Render del modelo original." aria-label="Ampliar Daga del Goblin"><img loading="lazy" decoding="async" src="./assets/ui/daga_goblin.png" alt="Daga del Goblin"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Daga del Goblin</strong><span>Render del modelo original.</span></figcaption></figure>
+      <figure class="art-card"><button type="button" class="art-open " data-gallery="armas" data-title="Lanza del Tritón" data-caption="Render del modelo original." aria-label="Ampliar Lanza del Tritón"><img loading="lazy" decoding="async" src="./assets/ui/lanza_triton.png" alt="Lanza del Tritón"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Lanza del Tritón</strong><span>Render del modelo original.</span></figcaption></figure>
+    </div>
+    <h4 class="group-label">Iconos</h4>
+    <div class="icon-grid"><figure class="art-card"><button type="button" class="art-open " data-gallery="iconos" data-title="Salud" data-caption="" aria-label="Ampliar Salud"><img loading="lazy" decoding="async" src="./assets/ui/icon_hp.png" alt="Salud"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Salud</strong></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="iconos" data-title="Puntos de acción" data-caption="" aria-label="Ampliar Puntos de acción"><img loading="lazy" decoding="async" src="./assets/ui/icon_ap.png" alt="Puntos de acción"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Puntos de acción</strong></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="iconos" data-title="Ataque" data-caption="" aria-label="Ampliar Ataque"><img loading="lazy" decoding="async" src="./assets/ui/icon_attack.png" alt="Ataque"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Ataque</strong></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="iconos" data-title="Defensa" data-caption="" aria-label="Ampliar Defensa"><img loading="lazy" decoding="async" src="./assets/ui/icon_defense.png" alt="Defensa"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Defensa</strong></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="iconos" data-title="Movimiento" data-caption="" aria-label="Ampliar Movimiento"><img loading="lazy" decoding="async" src="./assets/ui/icon_move.png" alt="Movimiento"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Movimiento</strong></figcaption></figure>
+<figure class="art-card"><button type="button" class="art-open " data-gallery="iconos" data-title="Magia" data-caption="" aria-label="Ampliar Magia"><img loading="lazy" decoding="async" src="./assets/ui/icon_magic.png" alt="Magia"><span class="zoom" aria-hidden="true">↗</span></button><figcaption><strong>Magia</strong></figcaption></figure></div>
+    <h4 class="group-label">Retratos de selección y HUD</h4>
+    <div class="portrait-grid">
+      <figure class="art-card"><div class="portrait-pair"><button type="button" class="art-open " data-gallery="retratos" data-title="Retrato grande de Caballero" data-caption="Selección · 1024 × 1024" aria-label="Ampliar Retrato grande de Caballero"><img loading="lazy" decoding="async" src="./assets/ui/Caballero_grande.png" alt="Retrato grande de Caballero"><span class="zoom" aria-hidden="true">↗</span></button><button type="button" class="art-open small-portrait" data-gallery="retratos" data-title="Retrato pequeño de Caballero" data-caption="HUD · 256 × 256" aria-label="Ampliar Retrato pequeño de Caballero"><img loading="lazy" decoding="async" src="./assets/ui/caballero_pequena.png" alt="Retrato pequeño de Caballero"><span class="zoom" aria-hidden="true">↗</span></button></div><figcaption><strong>Caballero</strong></figcaption></figure>
+<figure class="art-card"><div class="portrait-pair"><button type="button" class="art-open " data-gallery="retratos" data-title="Retrato grande de Arquero" data-caption="Selección · 1024 × 1024" aria-label="Ampliar Retrato grande de Arquero"><img loading="lazy" decoding="async" src="./assets/ui/arquero_grande.png" alt="Retrato grande de Arquero"><span class="zoom" aria-hidden="true">↗</span></button><button type="button" class="art-open small-portrait" data-gallery="retratos" data-title="Retrato pequeño de Arquero" data-caption="HUD · 256 × 256" aria-label="Ampliar Retrato pequeño de Arquero"><img loading="lazy" decoding="async" src="./assets/ui/arquero_pequena.png" alt="Retrato pequeño de Arquero"><span class="zoom" aria-hidden="true">↗</span></button></div><figcaption><strong>Arquero</strong></figcaption></figure>
+<figure class="art-card"><div class="portrait-pair"><button type="button" class="art-open " data-gallery="retratos" data-title="Retrato grande de Magnetar" data-caption="Selección · 1024 × 1024" aria-label="Ampliar Retrato grande de Magnetar"><img loading="lazy" decoding="async" src="./assets/ui/Mangetar_grande.png" alt="Retrato grande de Magnetar"><span class="zoom" aria-hidden="true">↗</span></button><button type="button" class="art-open small-portrait" data-gallery="retratos" data-title="Retrato pequeño de Magnetar" data-caption="HUD · 256 × 256" aria-label="Ampliar Retrato pequeño de Magnetar"><img loading="lazy" decoding="async" src="./assets/ui/magnetor_pequena.png" alt="Retrato pequeño de Magnetar"><span class="zoom" aria-hidden="true">↗</span></button></div><figcaption><strong>Magnetar</strong></figcaption></figure>
+<figure class="art-card"><div class="portrait-pair"><button type="button" class="art-open " data-gallery="retratos" data-title="Retrato grande de Goblin" data-caption="Selección · 1024 × 1024" aria-label="Ampliar Retrato grande de Goblin"><img loading="lazy" decoding="async" src="./assets/ui/goblin_grande.png" alt="Retrato grande de Goblin"><span class="zoom" aria-hidden="true">↗</span></button><button type="button" class="art-open small-portrait" data-gallery="retratos" data-title="Retrato pequeño de Goblin" data-caption="HUD · 256 × 256" aria-label="Ampliar Retrato pequeño de Goblin"><img loading="lazy" decoding="async" src="./assets/ui/goblin_pequeno.png" alt="Retrato pequeño de Goblin"><span class="zoom" aria-hidden="true">↗</span></button></div><figcaption><strong>Goblin</strong></figcaption></figure>
+<figure class="art-card"><div class="portrait-pair"><button type="button" class="art-open " data-gallery="retratos" data-title="Retrato grande de Elfo" data-caption="Selección · 1024 × 1024" aria-label="Ampliar Retrato grande de Elfo"><img loading="lazy" decoding="async" src="./assets/ui/elfo_grande.png" alt="Retrato grande de Elfo"><span class="zoom" aria-hidden="true">↗</span></button><button type="button" class="art-open small-portrait" data-gallery="retratos" data-title="Retrato pequeño de Elfo" data-caption="HUD · 256 × 256" aria-label="Ampliar Retrato pequeño de Elfo"><img loading="lazy" decoding="async" src="./assets/ui/elfo_pequeno.png" alt="Retrato pequeño de Elfo"><span class="zoom" aria-hidden="true">↗</span></button></div><figcaption><strong>Elfo</strong></figcaption></figure>
+<figure class="art-card"><div class="portrait-pair"><button type="button" class="art-open " data-gallery="retratos" data-title="Retrato grande de Tritón" data-caption="Selección · 1024 × 1024" aria-label="Ampliar Retrato grande de Tritón"><img loading="lazy" decoding="async" src="./assets/ui/triton_grande.png" alt="Retrato grande de Tritón"><span class="zoom" aria-hidden="true">↗</span></button><button type="button" class="art-open small-portrait" data-gallery="retratos" data-title="Retrato pequeño de Tritón" data-caption="HUD · 256 × 256" aria-label="Ampliar Retrato pequeño de Tritón"><img loading="lazy" decoding="async" src="./assets/ui/triton_pequeno.png" alt="Retrato pequeño de Tritón"><span class="zoom" aria-hidden="true">↗</span></button></div><figcaption><strong>Tritón</strong></figcaption></figure>
+<figure class="art-card"><div class="portrait-pair"><button type="button" class="art-open " data-gallery="retratos" data-title="Retrato grande de Silente" data-caption="Selección · 1024 × 1024" aria-label="Ampliar Retrato grande de Silente"><img loading="lazy" decoding="async" src="./assets/ui/silente_grande.png" alt="Retrato grande de Silente"><span class="zoom" aria-hidden="true">↗</span></button><button type="button" class="art-open small-portrait" data-gallery="retratos" data-title="Retrato pequeño de Silente" data-caption="HUD · 256 × 256" aria-label="Ampliar Retrato pequeño de Silente"><img loading="lazy" decoding="async" src="./assets/ui/silente_pequeno.png" alt="Retrato pequeño de Silente"><span class="zoom" aria-hidden="true">↗</span></button></div><figcaption><strong>Silente</strong></figcaption></figure>
+    </div>
+  </section>
+  <section class="art-section" id="audio" aria-labelledby="audio-titulo">
+    <header class="section-head"><h3 id="audio-titulo">Música y sonido</h3></header>
+    <div class="audio-grid"><article class="audio-card"><h4>Música de menú</h4><p>Música</p><audio controls preload="none" aria-label="Música de menú"><source src="./assets/audio/menu_music.ogg" type="audio/ogg"><a href="./assets/audio/menu_music.ogg">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Música de combate</h4><p>Música</p><audio controls preload="none" aria-label="Música de combate"><source src="./assets/audio/battle_music.ogg" type="audio/ogg"><a href="./assets/audio/battle_music.ogg">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Golpe de espada</h4><p>Efecto · Caballero</p><audio controls preload="none" aria-label="Golpe de espada"><source src="./assets/audio/espada.wav" type="audio/wav"><a href="./assets/audio/espada.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Disparo de flecha</h4><p>Efecto · Arquero y Elfo</p><audio controls preload="none" aria-label="Disparo de flecha"><source src="./assets/audio/flecha_disparo.wav" type="audio/wav"><a href="./assets/audio/flecha_disparo.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Onda electromagnética</h4><p>Efecto de magia · Magnetar</p><audio controls preload="none" aria-label="Onda electromagnética"><source src="./assets/audio/magnetar_onda.wav" type="audio/wav"><a href="./assets/audio/magnetar_onda.wav">Abrir audio</a></audio></article></div>
+    <details><summary>Escuchar los otros 15 efectos</summary><div class="audio-grid"><article class="audio-card"><h4>Bloqueo de escudo</h4><p>Caballero</p><audio controls preload="none" aria-label="Bloqueo de escudo"><source src="./assets/audio/escudo.wav" type="audio/wav"><a href="./assets/audio/escudo.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Impacto de flecha</h4><p>Arquero y Elfo</p><audio controls preload="none" aria-label="Impacto de flecha"><source src="./assets/audio/flecha_impacto.wav" type="audio/wav"><a href="./assets/audio/flecha_impacto.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Barrera Azul</h4><p>Magnetar</p><audio controls preload="none" aria-label="Barrera Azul"><source src="./assets/audio/magnetar_barrera.wav" type="audio/wav"><a href="./assets/audio/magnetar_barrera.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Desestabilización Mental</h4><p>Magnetar</p><audio controls preload="none" aria-label="Desestabilización Mental"><source src="./assets/audio/magnetar_mental.wav" type="audio/wav"><a href="./assets/audio/magnetar_mental.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Daga Oculta</h4><p>Goblin</p><audio controls preload="none" aria-label="Daga Oculta"><source src="./assets/audio/goblin_daga.wav" type="audio/wav"><a href="./assets/audio/goblin_daga.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Bomba de Humo</h4><p>Goblin</p><audio controls preload="none" aria-label="Bomba de Humo"><source src="./assets/audio/goblin_humo.wav" type="audio/wav"><a href="./assets/audio/goblin_humo.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Frasco de Ácido</h4><p>Goblin</p><audio controls preload="none" aria-label="Frasco de Ácido"><source src="./assets/audio/goblin_acido.wav" type="audio/wav"><a href="./assets/audio/goblin_acido.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Flecha de Raíz</h4><p>Elfo</p><audio controls preload="none" aria-label="Flecha de Raíz"><source src="./assets/audio/elfo_raiz.wav" type="audio/wav"><a href="./assets/audio/elfo_raiz.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Llamado de la Espesura</h4><p>Elfo</p><audio controls preload="none" aria-label="Llamado de la Espesura"><source src="./assets/audio/elfo_naturaleza.wav" type="audio/wav"><a href="./assets/audio/elfo_naturaleza.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Estocada de Coral</h4><p>Tritón</p><audio controls preload="none" aria-label="Estocada de Coral"><source src="./assets/audio/triton_estocada.wav" type="audio/wav"><a href="./assets/audio/triton_estocada.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Marea Repentina</h4><p>Tritón</p><audio controls preload="none" aria-label="Marea Repentina"><source src="./assets/audio/triton_ola.wav" type="audio/wav"><a href="./assets/audio/triton_ola.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Barrera de Hielo</h4><p>Tritón</p><audio controls preload="none" aria-label="Barrera de Hielo"><source src="./assets/audio/triton_hielo.wav" type="audio/wav"><a href="./assets/audio/triton_hielo.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Puño de Piedra</h4><p>Silente</p><audio controls preload="none" aria-label="Puño de Piedra"><source src="./assets/audio/silente_puno.wav" type="audio/wav"><a href="./assets/audio/silente_puno.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Grito Silencioso</h4><p>Silente</p><audio controls preload="none" aria-label="Grito Silencioso"><source src="./assets/audio/silente_grito.wav" type="audio/wav"><a href="./assets/audio/silente_grito.wav">Abrir audio</a></audio></article>
+<article class="audio-card"><h4>Terremoto</h4><p>Silente</p><audio controls preload="none" aria-label="Terremoto"><source src="./assets/audio/silente_terremoto.wav" type="audio/wav"><a href="./assets/audio/silente_terremoto.wav">Abrir audio</a></audio></article></div></details>
+  </section>
+</section>
+</main>
+<footer><div class="wrap"><p>Arena of the Fallen - Documento Técnico y Artístico. Desarrollado por Ángel.</p><button id="back-top" type="button">Volver arriba ↑</button></div></footer>
+<dialog id="lightbox" aria-labelledby="modal-title" aria-describedby="modal-caption">
+  <div class="modal-header"><h2 id="modal-title"></h2><form method="dialog"><button type="submit" class="close-modal" autofocus>Cerrar <span aria-hidden="true">×</span></button></form></div>
+  <div class="modal-view"><img src="./assets/ui/menu_bg.jpg" alt="" hidden><canvas hidden aria-label="Vista animada de la hoja de efectos"></canvas></div>
+  <p class="modal-caption" id="modal-caption"></p>
+  <div class="modal-controls">
+    <button type="button" id="previous">← Anterior</button><button type="button" id="next">Siguiente →</button>
+    <button type="button" id="animate" aria-pressed="false" hidden>Ver animación</button>
+  </div>
+</dialog>
+<script>
+const tabs = Array.from(document.querySelectorAll('[role="tab"]'));
+const panels = tabs.map(tab => document.getElementById(tab.getAttribute('aria-controls')));
+const artSections = new Set(['personajes', 'entornos', 'vfx', 'armas-ui', 'audio']);
+
+function activateTab(index) {
+  tabs.forEach((tab, position) => {
+    const active = position === index;
+    tab.setAttribute('aria-selected', active);
+    tab.tabIndex = active ? 0 : -1;
+    panels[position].hidden = !active;
+    if (!active) panels[position].querySelectorAll('audio').forEach(audio => audio.pause());
+  });
+}
+
+function followHash(scrollToTarget = false) {
+  const hash = location.hash.slice(1);
+  activateTab(hash === 'arte' || artSections.has(hash) ? 1 : 0);
+  if (scrollToTarget) document.getElementById(hash)?.scrollIntoView();
+}
+
+function selectTab(index, scrollToPanel = false) {
+  const hash = index === 1 ? '#arte' : '#tecnica';
+  activateTab(index);
+  if (location.hash !== hash) history.pushState(null, '', hash);
+  if (scrollToPanel) panels[index].scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+}
+
+tabs.forEach((tab, index) => {
+  tab.addEventListener('click', () => selectTab(index, true));
+  tab.addEventListener('keydown', event => {
+    const nextIndex = { ArrowLeft: 1 - index, ArrowRight: 1 - index, Home: 0, End: 1 }[event.key];
+    if (nextIndex === undefined) return;
+    event.preventDefault();
+    selectTab(nextIndex);
+    tabs[nextIndex].focus();
+  });
+});
+document.querySelectorAll('[data-tab-link]').forEach(link => link.addEventListener('click', event => {
+  event.preventDefault();
+  const index = Number(link.dataset.tabLink);
+  selectTab(index, true);
+  panels[index].focus({ preventScroll: true });
+}));
+window.addEventListener('hashchange', () => followHash(true));
+followHash(Boolean(location.hash));
+
+const lightbox = document.querySelector('#lightbox');
+const largeImage = lightbox.querySelector('img');
+const frameCanvas = lightbox.querySelector('canvas');
+const context = frameCanvas.getContext('2d');
+const animateButton = document.querySelector('#animate');
+const prevButton = document.querySelector('#previous');
+const nextButton = document.querySelector('#next');
+let gallery = [];
+let current = 0;
+let opener = null;
+let animationTimer = null;
+
+function stopAnimation() {
+  clearInterval(animationTimer);
+  animationTimer = null;
+  frameCanvas.hidden = true;
+  largeImage.hidden = false;
+  animateButton.textContent = 'Ver animación';
+  animateButton.setAttribute('aria-pressed', 'false');
+}
+
+function showImage(index) {
+  stopAnimation();
+  current = index;
+  const button = gallery[index];
+  const thumbnail = button.querySelector('img');
+  document.querySelector('#modal-title').textContent = button.dataset.title;
+  document.querySelector('#modal-caption').textContent = button.dataset.caption || '';
+  largeImage.src = thumbnail.getAttribute('src');
+  largeImage.alt = thumbnail.alt;
+  animateButton.hidden = button.dataset.sheet !== 'true' || !context;
+  prevButton.disabled = index === 0;
+  nextButton.disabled = index === gallery.length - 1;
+}
+
+document.addEventListener('click', event => {
+  const button = event.target.closest('button[data-gallery]');
+  if (!button) return;
+  gallery = Array.from(document.querySelectorAll('button[data-gallery]'))
+    .filter(item => item.dataset.gallery === button.dataset.gallery);
+  opener = button;
+  showImage(gallery.indexOf(button));
+  lightbox.showModal();
+});
+
+prevButton.addEventListener('click', () => showImage(current - 1));
+nextButton.addEventListener('click', () => showImage(current + 1));
+lightbox.addEventListener('keydown', event => {
+  if (event.key === 'ArrowLeft' && current > 0) showImage(current - 1);
+  if (event.key === 'ArrowRight' && current < gallery.length - 1) showImage(current + 1);
+});
+let pointerOnBackdrop = false;
+lightbox.addEventListener('pointerdown', event => { pointerOnBackdrop = event.target === lightbox; });
+lightbox.addEventListener('click', event => { if (event.target === lightbox && pointerOnBackdrop) lightbox.close(); });
+lightbox.addEventListener('close', () => {
+  stopAnimation();
+  opener?.focus({ preventScroll: true });
+});
+
+animateButton.addEventListener('click', async () => {
+  if (animationTimer !== null) {
+    stopAnimation();
+    return;
+  }
+  const source = largeImage.src;
+  try { await largeImage.decode(); } catch { return; }
+  if (!lightbox.open || largeImage.src !== source || animationTimer !== null) return;
+  const width = largeImage.naturalWidth / 4;
+  const height = largeImage.naturalHeight / 4;
+  frameCanvas.width = width;
+  frameCanvas.height = height;
+  let frame = 0;
+  function draw() {
+    context.clearRect(0, 0, width, height);
+    context.drawImage(largeImage, frame % 4 * width, Math.floor(frame / 4) * height, width, height, 0, 0, width, height);
+    frame = (frame + 1) % 16;
+  }
+  draw();
+  animationTimer = setInterval(draw, 125);
+  frameCanvas.hidden = false;
+  largeImage.hidden = true;
+  animateButton.textContent = 'Volver a la hoja';
+  animateButton.setAttribute('aria-pressed', 'true');
+});
+
+document.addEventListener('play', event => {
+  if (!(event.target instanceof HTMLAudioElement)) return;
+  document.querySelectorAll('audio').forEach(audio => {
+    if (audio !== event.target) audio.pause();
+  });
+}, true);
+document.querySelector('#back-top').addEventListener('click', () => {
+  window.scrollTo({ top: 0, behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+  tabs.find(tab => tab.getAttribute('aria-selected') === 'true').focus({ preventScroll: true });
+});
+</script>
+</body>
+</html>
